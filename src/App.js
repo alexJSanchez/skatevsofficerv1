@@ -18,8 +18,8 @@ function App() {
   }
 
   // Start game function
-  function startGame() {
-    setGameStarted(true);
+  function startGame(condition) {
+    setGameStarted(condition);
     // Other game initialization logic
   }
 
@@ -31,7 +31,7 @@ function App() {
       </div>
     ));
   }
-
+  // DrawZombies
   function drawZombies(amount) {
     const zombiePositions = [];
     for (let i = 0; i < amount; i++) {
@@ -44,7 +44,21 @@ function App() {
       </div>
     ));
   }
+  // draw Exit
+  function drawExit(amount) {
+    const exitPositions = [];
+    for (let i = 0; i < amount; i++) {
+      exitPositions.push(randomGridPosition());
+    }
 
+    return exitPositions.map((exitPos, index) => (
+      <div key={index} className="exit" style={{ gridColumnStart: exitPos.x, gridRowStart: exitPos.y }}>
+        E
+      </div>
+    ));
+  }
+
+  //random grid position
   function randomGridPosition() {
     let position;
     do {
@@ -52,26 +66,11 @@ function App() {
     } while (position.x === 10 && position.y === 10); // Ensure position is not at initial human position
     return position;
   }
-  // Create a game element (human, zombie, exit)
-  function createGameElement(tag, className) {
-    const element = document.createElement(tag);
-    element.className = className;
-    return element;
-  }
 
-  // Generate a new exit position
-  function generateExit() {
-    let exitPos;
-    do {
-      exitPos = { x: Math.floor(Math.random() * gridSize) + 1, y: Math.floor(Math.random() * gridSize) + 1 };
-    } while (exitPos.x === 10 && exitPos.y === 10); // Ensure exit is not at initial human position
-    return [exitPos];
-  }
 
 
   useEffect(() => {
-    startGame()
-    drawHuman()
+    startGame(true)
   }, [])
 
   return (
@@ -95,7 +94,8 @@ function App() {
                   </div>
                 }
                 {drawHuman()}
-                {drawZombies(5)}
+                {drawZombies(3)}
+                {drawExit(1)}
               </div>
             </div>
           </div>
