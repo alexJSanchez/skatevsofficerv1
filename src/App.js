@@ -32,22 +32,25 @@ function App() {
     ));
   }
 
-  function drawZombies() {
-    const gridPosition = randomGridPosition()
-    return gridPosition.map((zombiePos, index) => (
+  function drawZombies(amount) {
+    const zombiePositions = [];
+    for (let i = 0; i < amount; i++) {
+      zombiePositions.push(randomGridPosition());
+    }
+
+    return zombiePositions.map((zombiePos, index) => (
       <div key={index} className="zombie" style={{ gridColumnStart: zombiePos.x, gridRowStart: zombiePos.y }}>
         Z
       </div>
     ));
   }
 
-  // Generate a new exit position
   function randomGridPosition() {
-    let exitPos;
+    let position;
     do {
-      exitPos = { x: Math.floor(Math.random() * gridSize) + 1, y: Math.floor(Math.random() * gridSize) + 1 };
-    } while (exitPos.x === 10 && exitPos.y === 10); // Ensure exit is not at initial human position
-    return [exitPos];
+      position = { x: Math.floor(Math.random() * gridSize) + 1, y: Math.floor(Math.random() * gridSize) + 1 };
+    } while (position.x === 10 && position.y === 10); // Ensure position is not at initial human position
+    return position;
   }
   // Create a game element (human, zombie, exit)
   function createGameElement(tag, className) {
@@ -92,7 +95,7 @@ function App() {
                   </div>
                 }
                 {drawHuman()}
-                {drawZombies()}
+                {drawZombies(5)}
               </div>
             </div>
           </div>
