@@ -5,8 +5,8 @@ function App() {
   // Define game variables using useState hook
   const [gridSize, setGridSize] = useState(20);
   const [human, setHuman] = useState([{ x: 10, y: 10 }]);
-  const [zombies, setZombies] = useState(Array(3).fill().map(() => randomGridPosition()));
-  const [exit, setExit] = useState(Array(1).fill().map(() => randomGridPosition()));
+  const [zombies, setZombies] = useState(Array(3).fill().map(() => randomGridPosition([])));
+  const [exit, setExit] = useState(Array(1).fill().map(() => randomGridPosition([])));
   const [sandPits, setSandPits] = useState([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameScore, setGameScore] = useState(0);
@@ -14,7 +14,14 @@ function App() {
   // Start game function
   function startGame(condition) {
     setGameStarted(condition);
-    // Other game initialization logic
+    setGameScore(0);
+    setHuman([{ x: 10, y: 10 }]);
+    const newZombies = Array(3).fill().map(() => randomGridPosition([]));
+    const newExit = Array(1).fill().map(() => randomGridPosition([]));
+    const newSandPits = Array(10).fill().map(() => randomGridPosition([...newZombies, ...newExit]));
+    setZombies(newZombies);
+    setExit(newExit);
+    setSandPits(newSandPits);
   }
 
   // Draw human
@@ -54,11 +61,11 @@ function App() {
   }
 
   // Random grid position
-  function randomGridPosition() {
+  function randomGridPosition(existingPositions) {
     let position;
     do {
       position = { x: Math.floor(Math.random() * gridSize) + 1, y: Math.floor(Math.random() * gridSize) + 1 };
-    } while (position.x === 10 && position.y === 10); // Ensure position is not at initial human position
+    } while (existingPositions.some(pos => pos.x === position.x && pos.y === position.y) || (position.x === 10 && position.y === 10)); // Ensure position is not at initial human position or any existing positions
     return position;
   }
 
@@ -77,9 +84,51 @@ function App() {
     }
 
     setHuman([head]);
-    //  moveZombies();
-    // checkCollisions();
-    // draw();
+    moveZombies();
+    checkCollisions(head);
+  }
+  // Move zombies
+  function moveZombies() {
+    setZombies(prevZombies =>
+      prevZombies.map(zombie => {
+        let newZombie = { ...zombie };
+
+        // Calculate Manhattan distance to the human
+        const dx = human[0].x - zombie.x;
+        const dy = human[0].y - zombie.y;
+
+        // Move the zombie towards the human
+        if (Math.abs(dx) > Math.abs(dy)) {
+          newZombie.x += Math.sign(dx);
+        } else {
+          newZombie.y += Math.sign(dy);
+        }
+
+        // Check if the zombie hits a sand pit
+        for (let sandPit of sandPits) {
+          if (newZombie.x === sandPit.x && newZombie.y === sandPit.y) {
+            return null; // Remove the zombie
+          }
+        }
+
+        return newZombie;
+      }).filter(zombie => zombie !== null) // Filter out null zombies
+    );
+  }
+
+
+  // Check collisions
+  function checkCollisions(humanHead) {
+    // Check if human reaches the exit
+    for (let exitPos of exit) {
+      if (humanHead.x === exitPos.x && humanHead.y === exitPos.y) {
+        alert('You escaped! Congratulations!');
+        startGame(false); // Stop the game
+        return;
+      }
+    }
+
+    // Add additional collision checks if needed
   }
 
   // Key press handler
@@ -128,10 +177,13 @@ function App() {
 
   useEffect(() => {
     if (gameStarted) {
-      // Initialize zombies and exit when the game starts
-      setZombies(Array(3).fill().map(() => randomGridPosition()));
-      setExit(Array(1).fill().map(() => randomGridPosition()));
-      setSandPits(Array(10).fill().map(() => randomGridPosition()));
+      // Initialize zombies, exit, and sandpits when the game starts
+      const newZombies = Array(3).fill().map(() => randomGridPosition([]));
+      const newExit = Array(1).fill().map(() => randomGridPosition([...newZombies]));
+      const newSandPits = Array(10).fill().map(() => randomGridPosition([...newZombies, ...newExit]));
+      setZombies(newZombies);
+      setExit(newExit);
+      setSandPits(newSandPits);
     }
   }, [gameStarted]);
 
@@ -151,7 +203,7 @@ function App() {
                     {drawHuman()}
                     {drawZombies()}
                     {drawExit()}
-                    {drawPit(5)}
+                    {drawPit()}
                   </> :
                   <div>
                     <h1 id="instruction-text" onClick={() => startGame(true)}>Skater Vs Zombies Press Space Bar</h1>
