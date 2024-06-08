@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
+import { drawHuman, drawZombies, drawExit, drawPit } from './drawCharecters.js';
 
 function App() {
+
   const [gridSize, setGridSize] = useState(20);
   const [human, setHuman] = useState([{ x: 10, y: 10 }]);
   const [zombies, setZombies] = useState(Array(3).fill().map(() => randomGridPosition([])));
@@ -20,38 +22,6 @@ function App() {
     setZombies(newZombies);
     setExit(newExit);
     setSandPits(newSandPits);
-  }
-
-  function drawHuman() {
-    return human.map((segment, index) => (
-      <div key={index} className="human" style={{ gridColumnStart: segment.x, gridRowStart: segment.y }}>
-        S
-      </div>
-    ));
-  }
-
-  function drawZombies() {
-    return zombies.map((zombiePos, index) => (
-      <div key={index} className="zombie" style={{ gridColumnStart: zombiePos.x, gridRowStart: zombiePos.y }}>
-        Z
-      </div>
-    ));
-  }
-
-  function drawExit() {
-    return exit.map((exitPos, index) => (
-      <div key={index} className="exit" style={{ gridColumnStart: exitPos.x, gridRowStart: exitPos.y }}>
-        E
-      </div>
-    ));
-  }
-
-  function drawPit() {
-    return sandPits.map((sandPos, index) => (
-      <div key={index} className="sand" style={{ gridColumnStart: sandPos.x, gridRowStart: sandPos.y }}>
-        P
-      </div>
-    ));
   }
 
   function randomGridPosition(existingPositions) {
@@ -132,9 +102,10 @@ function App() {
         alert("Zombie has eaten your brain");
       }
     });
-    zombies.forEach(zombiePos => {
+    zombies.forEach((zombiePos, index) => {
       if (humanHead.x === zombiePos.x && humanHead.y === zombiePos.y) {
         alert("Zombie has eaten your brain");
+        // You can add logic here to reset the game or handle the collision
       }
     });
   }
@@ -187,10 +158,10 @@ function App() {
               <div id="game-board">
                 {gameStarted ?
                   <>
-                    {drawHuman()}
-                    {drawZombies()}
-                    {drawExit()}
-                    {drawPit()}
+                    {drawHuman(human)}
+                    {drawZombies(zombies)}
+                    {drawExit(exit)}
+                    {drawPit(sandPits)}
                   </> :
                   <div>
                     <h1 id="instruction-text">Skater Vs Zombies Press Space Bar</h1>
